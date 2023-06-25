@@ -10,7 +10,7 @@ exports.processVideo = async (event, context) => {
 
     const jobId = await submitBatchJob(bucketName, objectKey);
     await monitorBatchJob(jobId);
-
+    
     return {
       statusCode: 200,
       body: 'Video processing completed',
