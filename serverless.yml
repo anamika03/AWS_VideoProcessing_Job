@@ -1,0 +1,57 @@
+service: aws-node
+org: anamika03
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-1
+
+resources:
+  Resources:
+    InputBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: input-bucket-name1
+
+    OutputBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: output-bucket-name1
+
+    MyCustomRole:
+        Type: AWS::IAM::Role
+        Properties:
+          RoleName: my-custom-role
+          AssumeRolePolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Principal:
+                  Service: lambda.amazonaws.com
+                Action: sts:AssumeRole
+          Policies:
+            - PolicyName: MyCustomPolicy
+              PolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - s3:GetObject
+                      - s3:PutObject
+                    Resource: arn:aws:s3:::input-bucket-name1/*
+                
+functions:
+  processVideo:
+    handler: index.processVideo
+    role: MyCustomRole 
+    events:
+      - s3:
+        bucket: !Ref InputBucket
+        existing: true
+        event: s3:ObjectCreated:*
+
+plugins:
+  - serverless-webpack
+
+package:
+  individually: true
